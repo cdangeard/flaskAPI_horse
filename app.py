@@ -1,6 +1,9 @@
 import flask
 import pandas as pd
+from pathlib import Path
 
+path = str(Path(__file__).parent.absolute()) + '/'
+print(path)
 app = flask.Flask(__name__) # create an app instance
 app.config["DEBUG"] = True # enable debugging, auto-reload
 
@@ -8,7 +11,7 @@ def csv_to_json(filename, header=None):
     data = pd.read_csv(filename, header=header)
     return data.to_dict('records')
 
-data = csv_to_json('horse.csv', header=0)
+data = csv_to_json(path + './static/horse.csv', header=0)
 
 @app.route('/api/v1/resources/horses/all', methods=['GET'])
 def api_all():
