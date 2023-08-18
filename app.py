@@ -3,7 +3,6 @@ import pandas as pd
 from pathlib import Path
 
 path = str(Path(__file__).parent.absolute()) + '/'
-print(path)
 app = flask.Flask(__name__) # create an app instance
 app.config["DEBUG"] = True # enable debugging, auto-reload
 
