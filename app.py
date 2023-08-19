@@ -71,7 +71,6 @@ def api_doc():
                         '''
 
 
-
-
-app.run() # run the app
-
+# Run the application
+if __name__ == '__main__':
+    app.run()
