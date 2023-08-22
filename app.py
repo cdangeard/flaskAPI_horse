@@ -1,9 +1,10 @@
 from flask import Flask, jsonify,  make_response, request
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, get_jwt, verify_jwt_in_request
 from flask_httpauth import HTTPBasicAuth
 import pandas as pd
 from pathlib import Path
 from datetime import timedelta
+import numpy as np
 
 # Set path to current directory
 path = str(Path(__file__).parent.absolute()) + '/'
@@ -14,7 +15,8 @@ app.config["DEBUG"] = True # enable debugging, auto-reload
 # Convert csv to json
 def csv_to_json(filename, header=None):
     data = pd.read_csv(filename, header=header)
-    return data.to_dict('records')
+    data.replace({np.nan: None}, inplace=True)
+    return data.to_dict(orient='records') 
 
 # Load data
 data = csv_to_json(path + './static/horse.csv', header=0)
@@ -108,7 +110,6 @@ def verify_password(username, password):
         return True
     return False
 
-
 # Routes for API v2
 
 #Token retrieval
@@ -116,7 +117,9 @@ def verify_password(username, password):
 @auth.login_required
 def login():
     username = auth.current_user()
-    access_token = create_access_token(identity=username)
+
+    # Generate a new token for the user
+    access_token = create_access_token(identity=username, fresh=True)
     return jsonify(access_token=access_token, expire_in=EXPRIATION_TOKEN_SECONDS), 200
 
 
