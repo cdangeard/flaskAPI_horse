@@ -3,9 +3,10 @@ from flask_jwt_extended import JWTManager, jwt_required, create_access_token, ge
 from flask_httpauth import HTTPBasicAuth
 import pandas as pd
 from pathlib import Path
+from datetime import timedelta
 
+# Set path to current directory
 path = str(Path(__file__).parent.absolute()) + '/'
-
 
 app = Flask(__name__) # create an app instance
 app.config["DEBUG"] = True # enable debugging, auto-reload
@@ -19,7 +20,7 @@ def csv_to_json(filename, header=None):
 data = csv_to_json(path + './static/horse.csv', header=0)
 
 
-# Routes for API v1
+# Routes for API v1 (no authentication) #######################################################################
 
 # Home page
 @app.route('/', methods=['GET'])
@@ -82,13 +83,18 @@ def api_doc():
                         </table>
                         '''
 
-# API v2
-# Authentication
+# API v2 (authentication) ####################################################################################
+
+# Set up authentication BasicAuth and JWT
+users = {'nifi': 'nifi'}
 
 auth = HTTPBasicAuth()
+
 app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
 jwt = JWTManager(app)
-users = {'nifi': 'nifi'}
+EXPRIATION_TOKEN_SECONDS = 3600
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=3600)
+
 
 # Error handling for unauthorized access
 @auth.error_handler
@@ -101,6 +107,8 @@ def verify_password(username, password):
     if username in users and password == users.get(username):
         return True
     return False
+
+
 # Routes for API v2
 
 #Token retrieval
@@ -109,7 +117,7 @@ def verify_password(username, password):
 def login():
     username = auth.current_user()
     access_token = create_access_token(identity=username)
-    return jsonify(access_token=access_token), 200
+    return jsonify(access_token=access_token, expire_in=EXPRIATION_TOKEN_SECONDS), 200
 
 
 @app.route('/api/v2/protected', methods=['GET'])
@@ -119,8 +127,93 @@ def protected():
     return jsonify(logged_in_as=current_user), 200
 
 # A route to return all of the available entries in our catalog. jwt_required() is used to protect the route
-@jwt_required()
 @app.route('/api/v2/resources/horses/all', methods=['GET'])
+@jwt_required()
+def api_all_v2():
+    return jsonify(data)                        
+
+# A route to return a specific horse by id. jwt_required() is used to protect the route
+@app.route('/api/v2/resources/horse', methods=['GET'])
+@jwt_required()
+def api_id_v2():
+    # Check if an ID was provided as part of the URL.
+    # If ID is provided, assign it to a variable.
+    # If no ID is provided, display an error in the browser.
+    if 'id' in request.args:
+        id = int(request.args['id'])
+    else:
+        return "Error: No id field provided. Please specify an id."
+
+    # Create an empty list for our results
+    results = []
+
+    # Loop through the data and match results that fit the requested ID.
+    # IDs are unique, but other fields might return many results
+    for horse in data:
+        if horse['hospital_number'] == id:
+            results.append(horse)
+
+    # Use the jsonify function from Flask to convert our list of
+    # Python dictionaries to the JSON format.
+    return jsonify(results)
+
+# API Documentation vor v2
+@app.route('/api/v2/doc', methods=['GET'])
+def api_doc_v2():
+    return '''
+                        <h1>API Documentation</h1>
+                        <p>API for horse data</p> 
+                        <table>
+                        <tr>
+                        <th>Endpoint</th>
+                        <th>Method</th>
+                        <th>Parameters</th>
+                        <th>Authentication</th>
+                        <th>Response</th>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <a href= './login'>/api/v2/login</a>
+                            </td>
+                            <td>GET</td>
+                            <td>None</td>
+                            <td>Basic Auth</td>
+                            <td>Return an access_token</td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <a href= './protected'>/api/v2/protected</a>
+                            </td>
+                            <td>GET</td>
+                            <td>None</td>
+                            <td>JWT</td>
+                            <td>Return a login validation</td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <a href='./resources/horses/all'>/api/v2/resources/horses/all</a>
+                            </td>
+                            <td>GET</td>
+                            <td>None</td>
+                            <td>JWT</td>
+                            <td>Return all horses</td>
+                        </tr>
+
+                        <tr>
+                            <td><a href='./resources/horse?id=530101'>/api/v2/resources/horse</a></td>
+                            <td>GET</td>
+                            <td>id</td>
+                            <td>JWT</td>
+                            <td>Return a specific horse by id</td>
+                        </tr>
+                        </table>
+                        '''
+
+
+# ERROR HANDLING ##############################################################################################
 
 # Error handling for API
 @app.errorhandler(404)
