@@ -5,6 +5,7 @@ import pandas as pd
 from pathlib import Path
 from datetime import timedelta
 import numpy as np
+import datetime
 
 # Set path to current directory
 path = str(Path(__file__).parent.absolute()) + '/'
@@ -159,6 +160,15 @@ def api_id_v2():
     # Use the jsonify function from Flask to convert our list of
     # Python dictionaries to the JSON format.
     return jsonify(results)
+
+@app.route('/api/v2/resources/idtierce', methods=['GET'])
+@jwt_required()
+def api_idtierce_v2():
+    # Return a random tierce of ids of horses
+    np.random.seed(datetime.now().day)
+    winners = np.random.choice(data['hospital_number'], 3, replace=False)
+    return jsonify(winners=winners.tolist())
+
 
 # API Documentation vor v2
 @app.route('/api/v2/doc', methods=['GET'])
