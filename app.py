@@ -6,6 +6,7 @@ from pathlib import Path
 from datetime import timedelta
 import numpy as np
 import datetime
+import io
 
 # Set path to current directory
 path = str(Path(__file__).parent.absolute()) + '/'
@@ -168,6 +169,57 @@ def api_idtierce_v2():
     np.random.seed(datetime.now().day)
     winners = np.random.choice(data['hospital_number'], 3, replace=False)
     return jsonify(winners=winners.tolist())
+
+@app.route('/api/v2/resources/validateHorses_JSON', methods=['POST'])
+@jwt_required()
+def api_validateHorses_JSON_content_v2():
+    # Validate a json content with horse data
+    # Check if the body request is json
+    if not request.is_json:
+        return jsonify(message='The request is not json'), 400
+    try:
+        reqContent = request.get_json()
+        print(reqContent[0].keys())
+        if set(reqContent[0].keys()) == set(data[0].keys()):
+            return jsonify(message='The json content is valid'), 200
+    except Exception as e:
+        print('error in json', e)
+        return jsonify(message='The request is not json'), 400
+    return jsonify(message='The json content is not valid'), 400
+
+@app.route('/api/v2/resources/validateHorse_JSON', methods=['POST'])
+@jwt_required()
+def api_validateSingleHorse_JSON_content_v2():
+    # Validate a json content with a single horse data
+    # Check if the body request is json
+    if not request.is_json:
+        return jsonify(message='The request is not json'), 400
+    try:
+        reqContent = request.get_json()
+        print(reqContent.keys())
+        if set(reqContent.keys()) == set(data[0].keys()):
+            return jsonify(message='The json content is valid'), 200
+    except Exception as e:
+        return jsonify(message='The request is not json'), 400
+    return jsonify(message='The json content is not valid'), 400
+
+@app.route('/api/v2/resources/validateHorses_CSV', methods=['POST'])
+#@jwt_required()
+def api_validateHorses_CSV_content_v2():
+    #validate a csv content with horse data
+    # Check if the body request is csv
+    requestContent = request.get_data()
+    if not requestContent:
+        return jsonify(message='The request is not csv'), 400
+    try:
+        reqContent = pd.read_csv(io.StringIO(requestContent.decode('utf-8')))
+        if set(reqContent.columns) == set(data[0].keys()):
+            return jsonify(message='The csv content is valid'), 200
+    except Exception as e:
+        return jsonify(message='The request is not csv'), 400
+    return jsonify(message='The csv content is not valid'), 400
+
+
 
 
 # API Documentation vor v2
