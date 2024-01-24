@@ -3,7 +3,6 @@ from flask_jwt_extended import JWTManager, jwt_required, create_access_token, ge
 from flask_httpauth import HTTPBasicAuth
 import pandas as pd
 from pathlib import Path
-from datetime import timedelta
 import numpy as np
 import datetime
 import io
@@ -97,7 +96,7 @@ auth = HTTPBasicAuth()
 app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
 jwt = JWTManager(app)
 EXPRIATION_TOKEN_SECONDS = 3600
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=3600)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(seconds=3600)
 
 
 # Error handling for unauthorized access
