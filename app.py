@@ -166,7 +166,7 @@ def api_id_v2():
 @jwt_required()
 def api_idtierce_v2():
     # Return a random tierce of ids of horses
-    np.random.seed(datetime.now().day)
+    np.random.seed(datetime.datetime.now().day)
     winners = np.random.choice(data['hospital_number'], 3, replace=False)
     return jsonify(winners=winners.tolist())
 
@@ -218,8 +218,6 @@ def api_validateHorses_CSV_content_v2():
     except Exception as e:
         return jsonify(message='The request is not csv'), 400
     return jsonify(message='The csv content is not valid'), 400
-
-
 
 
 # API Documentation vor v2
