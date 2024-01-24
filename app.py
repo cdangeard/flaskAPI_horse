@@ -166,7 +166,7 @@ def api_id_v2():
 def api_idtierce_v2():
     # Return a random tierce of ids of horses
     np.random.seed(datetime.datetime.now().day)
-    winners = np.random.choice(data['hospital_number'], 3, replace=False)
+    winners = np.random.choice([h['hospital_number'] for h in data], 3, replace=False)
     return jsonify(winners=winners.tolist())
 
 @app.route('/api/v2/resources/validateHorses_JSON', methods=['POST'])
