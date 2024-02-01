@@ -146,7 +146,7 @@ def api_id_v2():
     if 'id' in request.args:
         id = int(request.args['id'])
     else:
-        return "Error: No id field provided. Please specify an id."
+        return jsonify(Error="No id field provided. Please specify an id."), 400
 
     # Create an empty list for our results
     results = []
