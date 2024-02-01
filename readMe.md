@@ -5,7 +5,7 @@
 Educational project for learning Flask and API.
 
 ## Hosted
-[Vercel](api-horse.vercel.app)
+[Vercel](https://api-horse.vercel.app/)
 
 ## Installation
 
@@ -21,10 +21,7 @@ pip install requirements.txt
 python app.py
 ```
 
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
-
-## dataSet source
+## DataSet source
 https://www.kaggle.com/uciml/horse-colic
 
 
